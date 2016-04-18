@@ -2,7 +2,7 @@
 General purpose configuration parser builder
 
 ```configbuilder``` offers you the easiest way to define a configuration file for your
-application project in written python.
+application project written in python.
  
 ## Synopsis
 Data serialization language such as YAML or JSON is a good choice to write a
