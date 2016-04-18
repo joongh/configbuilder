@@ -1,0 +1,9 @@
+Name: String
+Version: String
+DataDir: ExistingPath
+NodeList:
+    NodeListName:
+        Serial: Integer
+        IP: IP
+        Protocol: Protocol
+Tags: List of String

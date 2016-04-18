@@ -1,0 +1,13 @@
+Name: ConfigTest
+Version: 1.0.0
+DataDir: ./
+NodeList:
+    Node1:
+        Serial: 123456789
+        IP: 10.0.0.1
+        Protocol: ftp
+Tags:
+    - This
+    - Is
+    - Test
+    - Config
