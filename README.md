@@ -89,7 +89,7 @@ This validator can be set when building the parser.
 
 ## Installation
 
-    python setup.py install
+    pip install configbuilder
 
 ## Authors
 * ** Joong-Hee Lee ** - *Initial work* - [joongh](https://github.com/joongh)
