@@ -38,6 +38,15 @@ class Config(object):
         config = self.get_config(key)
         return config.get('/'.join(keys))
 
+    def iteritems(self):
+        return self.configs.iteritems()
+
+    def iterkeys(self):
+        return self.configs.iterkeys()
+
+    def itervalues(self):
+        return self.configs.itervalues()
+
     def dump(self):
         dumpdata = {}
         for key, val in self.configs.iteritems():
