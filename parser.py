@@ -106,11 +106,14 @@ class ConfigParser(object):
             raise KeyError(key)
         return self.parser[idxkey]
 
-    def _parse(self, configs):
+    def _parse(self, configs, ignorekeys=[]):
         if not configs:
             return configs
         config = Config(casesensitivekey=self.casesensitivekey)
         for key, val in configs.iteritems():
+            ignore = key if self.casesensitivekey else key.lower()
+            if ignore in ignorekeys:
+                continue
             try:
                 parser = self._get_parser(key)
             except KeyError as err:
@@ -119,7 +122,7 @@ class ConfigParser(object):
                 except KeyError:
                     raise err
             if issubclass(type(parser), ConfigParser):
-                subconfig = parser._parse(val)
+                subconfig = parser._parse(val, ignorekeys=ignorekeys)
                 config.set_config(key, subconfig)
             else:
                 config.set_config(key, None if val==None else parser(val))
@@ -128,14 +131,16 @@ class ConfigParser(object):
     def get_keys(self):
         return self.parser.keys()
 
-    def parse_configs(self, config_path):
+    def parse_configs(self, config_path, ignorekeys=[]):
         if not os.path.isfile(config_path):
             raise ValueError('%s is not a existing file.' % config_path)
         try:
             config_data = yaml.load(open(config_path, 'r').read())
         except yaml.parser.ParserError as err:
             raise TypeError('Supporting yaml format only.')
-        return self._parse(config_data)
+        if not self.casesensitivekey:
+            ignorekeys = [key.lower() for key in ignorekeys]
+        return self._parse(config_data, ignorekeys=ignorekeys)
 
 def create_parser(template_path,
                   validator=Validator(),
