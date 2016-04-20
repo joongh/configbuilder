@@ -32,8 +32,8 @@ class Config(object):
 class ConfigParser(object):
     CONFIGNAMEKEY='_confignamekey'
 
-    def __init__(self, 
-                 template, 
+    def __init__(self,
+                 template,
                  name=None,
                  validator=None,
                  casesensitivekey=True):
@@ -86,7 +86,7 @@ class ConfigParser(object):
                 subconfig = parser._parse(val)
                 config.set_config(key, subconfig)
             else:
-                config.set_config(key, None if not val else parser(val))
+                config.set_config(key, None if val==None else parser(val))
         return config
 
     def get_keys(self):
@@ -101,7 +101,7 @@ class ConfigParser(object):
             raise TypeError('Supporting yaml format only.')
         return self._parse(config_data)
 
-def create_parser(template_path, 
+def create_parser(template_path,
                   validator=Validator(),
                   casesensitivekey=False):
     if not os.path.isfile(template_path):
@@ -110,7 +110,6 @@ def create_parser(template_path,
         template_data = yaml.load(open(template_path, 'r').read())
     except yaml.parser.ParserError as err:
         raise TypeError('Supporting yaml format only.')
-    return ConfigParser(template_data, 
-                        validator=validator, 
+    return ConfigParser(template_data,
+                        validator=validator,
                         casesensitivekey=casesensitivekey)
-
