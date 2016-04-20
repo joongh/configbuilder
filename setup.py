@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 from setuptools import setup
+import os
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
     
 setup(
     name='configbuilder',
-    version='0.1',
+    version='0.2.1',
     url='https://github.com/joongh/configbuilder',
     license='MIT',
     author='Joong-Hee Lee',
