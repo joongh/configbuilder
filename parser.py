@@ -12,12 +12,30 @@ class Config(object):
     def set_config(self, key, value):
         self.configs[key] = value
 
-    def get(self, configkey):
-        keys = configkey.split('/')
-        key = keys.pop(0) if self.casesensitivekey else keys.pop(0).lower()
-        if len(keys) == 0:
+    def get_config(self, key):
+        if self.casesensitivekey:
             return self.configs[key]
-        config = self.configs[key]
+        idxkey = None
+        for configkey in self.configs.iterkeys():
+            if configkey.lower() == key.lower():
+                idxkey = configkey
+                break
+        if not idxkey:
+            raise KeyError(key)
+        return self.configs[idxkey]
+
+
+    def get(self, configkey, *args):
+        keys = configkey.split('/')
+        key = keys.pop(0)
+        if len(keys) == 0:
+            try:
+                return self.get_config(key)
+            except KeyError as err:
+                if not len(args):
+                    raise err
+                return args[0]
+        config = self.get_config(key)
         return config.get('/'.join(keys))
 
     def dump(self):
@@ -51,8 +69,6 @@ class ConfigParser(object):
 
     def _build(self, template):
         for key, val in template.iteritems():
-            if not self.casesensitivekey:
-                key = key.lower()
             try:
                 self.parser[key] = self.validator.get_validator(val)
             except AttributeError as err:
@@ -69,14 +85,25 @@ class ConfigParser(object):
                         casesensitivekey=self.casesensitivekey
                     )
 
+    def _get_parser(self, key):
+        if self.casesensitivekey:
+            return self.parser[key]
+        idxkey = None
+        for k in self.parser.iterkeys():
+            if k.lower() == key.lower():
+                idxkey = k
+                break
+        if not idxkey:
+            raise KeyError(key)
+        return self.parser[idxkey]
+
     def _parse(self, configs):
         if not configs:
             return configs
         config = Config(casesensitivekey=self.casesensitivekey)
         for key, val in configs.iteritems():
-            key = key if self.casesensitivekey else key.lower()
             try:
-                parser = self.parser[key]
+                parser = self._get_parser(key)
             except KeyError as err:
                 try:
                     parser = self.parser[self.CONFIGNAMEKEY]
