@@ -38,6 +38,15 @@ class Config(object):
         config = self.get_config(key)
         return config.get('/'.join(keys))
 
+    def iteritems(self):
+        return self.configs.iteritems()
+
+    def iterkeys(self):
+        return self.configs.iterkeys()
+
+    def itervalues(self):
+        return self.configs.itervalues()
+
     def dump(self):
         dumpdata = {}
         for key, val in self.configs.iteritems():
@@ -49,6 +58,7 @@ class Config(object):
 
 class ConfigParser(object):
     CONFIGNAMEKEY='_confignamekey'
+    CONFIGINKEY='config in'
 
     def __init__(self,
                  template,
@@ -58,12 +68,17 @@ class ConfigParser(object):
         self.casesensitivekey = casesensitivekey
         self.name = name
         self.parser = {}
+        self.configinkeys = []
         self.validator = validator or Validator()
         self._build(template)
 
     def _is_config_name(self, key):
         try:
-            return self.name and key[len(self.name):].lower() == 'name'
+            if not self.name:
+                return False
+            name = self.name.split('/')[-1]
+            lowerkey = key.lower()
+            return lowerkey.endswith('name') and lowerkey.startswith(name.lower())
         except IndexError:
             return False
 
@@ -71,6 +86,10 @@ class ConfigParser(object):
         for key, val in template.iteritems():
             try:
                 self.parser[key] = self.validator.get_validator(val)
+                if val.strip().lower().startswith(self.CONFIGINKEY):
+                    self.configinkeys.append(
+                        key if self.casesensitivekey else key.lower()
+                    )
             except AttributeError as err:
                 if type(val) is not dict:
                     raise err
@@ -80,7 +99,7 @@ class ConfigParser(object):
                 self.parser[key] = \
                     ConfigParser(
                         val,
-                        name=name,
+                        name='%s/%s' % (self.name, name),
                         validator=self.validator,
                         casesensitivekey=self.casesensitivekey
                     )
@@ -97,11 +116,14 @@ class ConfigParser(object):
             raise KeyError(key)
         return self.parser[idxkey]
 
-    def _parse(self, configs):
+    def _parse(self, configs, ignorekeys=[]):
         if not configs:
             return configs
         config = Config(casesensitivekey=self.casesensitivekey)
         for key, val in configs.iteritems():
+            ignore = key if self.casesensitivekey else key.lower()
+            if ignore in ignorekeys:
+                continue
             try:
                 parser = self._get_parser(key)
             except KeyError as err:
@@ -110,7 +132,7 @@ class ConfigParser(object):
                 except KeyError:
                     raise err
             if issubclass(type(parser), ConfigParser):
-                subconfig = parser._parse(val)
+                subconfig = parser._parse(val, ignorekeys=ignorekeys)
                 config.set_config(key, subconfig)
             else:
                 config.set_config(key, None if val==None else parser(val))
@@ -119,14 +141,36 @@ class ConfigParser(object):
     def get_keys(self):
         return self.parser.keys()
 
-    def parse_configs(self, config_path):
-        if not os.path.isfile(config_path):
-            raise ValueError('%s is not a existing file.' % config_path)
+    def _get_list_of_configin_keys(self):
+        configinkeys = self.configinkeys
+        for key, value in self.parser.iteritems():
+            if issubclass(type(value), ConfigParser):
+                configinkeys = configinkeys + value._get_list_of_configin_keys()
+        return configinkeys
+
+    def _process_parent_configs(self, rootconfig, configs):
+        configinkeys = self._get_list_of_configin_keys()
+        for key, value in configs.iteritems():
+            if issubclass(type(value), Config):
+                self._process_parent_configs(rootconfig, value)
+            if key.lower() in configinkeys:
+                configs.set_config(key, rootconfig.get(value))
+
+    def parse_configs(self, config_file_or_data, ignorekeys=[]):
+        if os.path.isfile(config_file_or_data):
+            config_str = open(config_file_or_data, 'r').read()
+        else:
+            config_str = config_file_or_data
         try:
-            config_data = yaml.load(open(config_path, 'r').read())
+            config_yaml = yaml.load(config_str)
         except yaml.parser.ParserError as err:
             raise TypeError('Supporting yaml format only.')
-        return self._parse(config_data)
+
+        if not self.casesensitivekey:
+            ignorekeys = [key.lower() for key in ignorekeys]
+        configs = self._parse(config_yaml, ignorekeys=ignorekeys)
+        self._process_parent_configs(configs, configs)
+        return configs
 
 def create_parser(template_path,
                   validator=Validator(),

@@ -2,6 +2,9 @@
 #-*- coding: utf-8 -*-
 from setuptools import setup
 
+def read(fname):
+    return open(os.path.join(os.path.dirname(__file__), fname)).read()
+    
 setup(
     name='configbuilder',
     version='0.1',
@@ -10,9 +13,18 @@ setup(
     author='Joong-Hee Lee',
     author_email='leejoonghee@gmail.com',
     description='General purpose configuration parser builder',
+    long_description=read('README.md'),
     package_dir={'configbuilder':''},
     packages=['configbuilder'],
     install_requires=[
         'PyYAML==3.11',
+    ],
+    classifiers=[
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Developers",
+        "Topic :: Utilities",
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 2.7",
+        "Topic :: Software Development :: Libraries :: Python Modules"
     ],
 )

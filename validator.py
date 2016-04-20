@@ -8,6 +8,7 @@ class Validator(object):
     def __init__(self):
         self.TYPE_PREFIX = {
             'list of': self.get_validate_list_of,
+            'config in': self.get_validate_config_in,
         }
    
     def get_validator(self, t):
@@ -25,11 +26,17 @@ class Validator(object):
         validate_func = lambda v: self._validate_list_of(v, subtype)
         setattr(self, name, validate_func)
         return validate_func
+
+    def get_validate_config_in(self, configname):
+        name = 'validate_config_in_%s' % configname.strip().lower()
+        validate_func = lambda v: self._validate_config_in(v, configname)
+        setattr(self, name, validate_func)
+        return validate_func
         
     def validate_string(self, value):
         if not isinstance(value, basestring):
             raise ValueError('Value should be a string.')
-        return value.strip()            
+        return value.strip()
 
     def validate_boolean(self, value):
         if isinstance(value, basestring):
@@ -89,4 +96,7 @@ class Validator(object):
         if value not in choices:
             raise ValueError('Value should be in %s' % choices)
         return value
+    
+    def _validate_config_in(self, value, configname):
+        return '%s/%s' % (configname, value.strip())
 

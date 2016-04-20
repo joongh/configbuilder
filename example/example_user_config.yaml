@@ -6,6 +6,8 @@ NodeList:
         Serial: 123456789
         IP: 10.0.0.1
         Protocol: ftp
+    Node2:
+        ParentNode: Node1
 Tags:
     - This
     - Is

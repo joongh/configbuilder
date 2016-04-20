@@ -3,6 +3,7 @@ Version: String
 DataDir: ExistingPath
 NodeList:
     NodeListName:
+        ParentNode: Config In NodeList
         Serial: Integer
         IP: IP
         Protocol: Protocol
