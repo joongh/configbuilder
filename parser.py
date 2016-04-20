@@ -156,16 +156,19 @@ class ConfigParser(object):
             if key.lower() in configinkeys:
                 configs.set_config(key, rootconfig.get(value))
 
-    def parse_configs(self, config_path, ignorekeys=[]):
-        if not os.path.isfile(config_path):
-            raise ValueError('%s is not a existing file.' % config_path)
+    def parse_configs(self, config_file_or_data, ignorekeys=[]):
+        if os.path.isfile(config_file_or_data):
+            config_str = open(config_file_or_data, 'r').read()
+        else:
+            config_str = config_file_or_data
         try:
-            config_data = yaml.load(open(config_path, 'r').read())
+            config_yaml = yaml.load(config_str)
         except yaml.parser.ParserError as err:
             raise TypeError('Supporting yaml format only.')
+
         if not self.casesensitivekey:
             ignorekeys = [key.lower() for key in ignorekeys]
-        configs = self._parse(config_data, ignorekeys=ignorekeys)
+        configs = self._parse(config_yaml, ignorekeys=ignorekeys)
         self._process_parent_configs(configs, configs)
         return configs
 
