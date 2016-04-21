@@ -8,7 +8,7 @@ def read(fname):
     
 setup(
     name='configbuilder',
-    version='0.2.1',
+    version='0.2.2',
     url='https://github.com/joongh/configbuilder',
     license='MIT',
     author='Joong-Hee Lee',
