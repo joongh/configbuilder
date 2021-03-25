@@ -18,7 +18,7 @@ setup(
     package_dir={'configbuilder':''},
     packages=['configbuilder'],
     install_requires=[
-        'PyYAML==3.11',
+        'PyYAML==5.4',
     ],
     classifiers=[
         "Development Status :: 4 - Beta",
